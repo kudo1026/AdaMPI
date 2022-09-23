@@ -72,7 +72,8 @@ def render_3dphoto(
     # render novel views
     swing_path_list = gen_swing_path()
     frames = []
-    for cam_ext in tqdm(swing_path_list):
+    # for cam_ext in tqdm(swing_path_list):
+    for cam_ext in swing_path_list:
         frame = render_novel_view(
             mpi_all_rgb_src,
             mpi_all_sigma_src,

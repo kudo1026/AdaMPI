@@ -94,7 +94,7 @@ class DepthDecoder(nn.Module):
         self.conv_up2 = conv(256, final_enc_out_channels, 1, False)
 
         self.num_ch_enc = num_ch_enc
-        print("num_ch_enc=", num_ch_enc)
+        # print("num_ch_enc=", num_ch_enc)
         self.num_ch_enc = [x + 2 for x in self.num_ch_enc]
         self.num_ch_dec = np.array([12, 24, 48, 96, 192])
         # self.num_ch_enc = np.array([64, 64, 128, 256, 512])
@@ -106,7 +106,7 @@ class DepthDecoder(nn.Module):
             num_ch_in = self.num_ch_enc[-1] if i == 4 else self.num_ch_dec[i + 1]
             num_ch_out = self.num_ch_dec[i]
             self.convs[self.tuple_to_str(("upconv", i, 0))] = GatedConvBlock(num_ch_in, num_ch_out)
-            print("upconv_{}_{}".format(i, 0), num_ch_in, num_ch_out)
+            # print("upconv_{}_{}".format(i, 0), num_ch_in, num_ch_out)
 
             # upconv_1
             num_ch_in = self.num_ch_dec[i]
@@ -114,7 +114,7 @@ class DepthDecoder(nn.Module):
                 num_ch_in += self.num_ch_enc[i - 1]
             num_ch_out = self.num_ch_dec[i]
             self.convs[self.tuple_to_str(("upconv", i, 1))] = GatedConvBlock(num_ch_in, num_ch_out)
-            print("upconv_{}_{}".format(i, 1), num_ch_in, num_ch_out)
+            # print("upconv_{}_{}".format(i, 1), num_ch_in, num_ch_out)
 
         for s in self.scales:
             self.convs[self.tuple_to_str(("dispconv", s))] = GatedConv(self.num_ch_dec[s], self.num_output_channels)
