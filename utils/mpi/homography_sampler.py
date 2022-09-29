@@ -1,31 +1,30 @@
 import torch
 import numpy as np
 from scipy.spatial.transform import Rotation
+from utils.utils import batch_inverse_3x3
 
+# def inverse(matrices):
+#     """
+#     torch.inverse() sometimes produces outputs with nan the when batch size is 2.
+#     Ref https://github.com/pytorch/pytorch/issues/47272
+#     this function keeps inversing the matrix until successful or maximum tries is reached
+#     :param matrices Bx3x3
+#     """
+#     inverse = None
+#     max_tries = 5
+#     while (inverse is None) or (torch.isnan(inverse)).any():
+#         torch.cuda.synchronize()
+#         inverse = torch.inverse(matrices)
 
-def inverse(matrices):
-    """
-    torch.inverse() sometimes produces outputs with nan the when batch size is 2.
-    Ref https://github.com/pytorch/pytorch/issues/47272
-    this function keeps inversing the matrix until successful or maximum tries is reached
-    :param matrices Bx3x3
-    """
-    inverse = None
-    max_tries = 5
-    while (inverse is None) or (torch.isnan(inverse)).any():
-        torch.cuda.synchronize()
-        inverse = torch.inverse(matrices)
+#         # Break out of the loop when the inverse is successful or there"re no more tries
+#         max_tries -= 1
+#         if max_tries == 0:
+#             break
 
-        # Break out of the loop when the inverse is successful or there"re no more tries
-        max_tries -= 1
-        if max_tries == 0:
-            break
-
-    # Raise an Exception if the inverse contains nan
-    if (torch.isnan(inverse)).any():
-        raise Exception("Matrix inverse contains nan!")
-    return inverse
-
+#     # Raise an Exception if the inverse contains nan
+#     if (torch.isnan(inverse)).any():
+#         raise Exception("Matrix inverse contains nan!")
+#     return inverse
 
 class HomographySample:
     def __init__(self, H_tgt, W_tgt, device=None):
@@ -129,7 +128,8 @@ class HomographySample:
 
         # TODO: fix cuda inverse
         with torch.no_grad():
-            H_src_tgt = inverse(H_tgt_src)
+            # H_src_tgt = inverse(H_tgt_src)
+            H_src_tgt = batch_inverse_3x3(H_tgt_src)
 
         # create tgt image grid, and map to src
         meshgrid_tgt_homo = self.meshgrid.to(src_BCHW.device)
