@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 from scipy.spatial.transform import Rotation
-from utils.utils import batch_inverse_3x3
 
 # def inverse(matrices):
 #     """
@@ -25,6 +24,50 @@ from utils.utils import batch_inverse_3x3
 #     if (torch.isnan(inverse)).any():
 #         raise Exception("Matrix inverse contains nan!")
 #     return inverse
+
+def batch_inverse_3x3(M, check_singular=False):
+    
+    a = M[:, 0:1, 0:1]
+    b = M[:, 0:1, 1:2]
+    c = M[:, 0:1, 2:3]
+    d = M[:, 1:2, 0:1]
+    e = M[:, 1:2, 1:2]
+    h = M[:, 2:3, 1:2]
+    f = M[:, 1:2, 2:3]
+    g = M[:, 2:3, 0:1]
+    i = M[:, 2:3, 2:3]
+
+    A = (e * i - f * h)
+    B = -(d * i - f * g)
+    C = (d * h - e * g)
+    D = -(b * i - c * h)
+    E = (a * i - c * g)
+    F = -(a * h - b * g)
+    G = (b * f - c * e)
+    H = -(a * f - c * d)
+    I = (a * e - b * d)
+
+    detM = a * A + b * B + c * C
+
+    # Check is slow, default to False
+    if check_singular:
+        if torch.any(torch.isclose(detM, torch.zeros_like(detM))):
+            raise Exception('There exists singular matrix in input!')
+
+    invM = torch.zeros_like(M)
+    invM[:, 0:1, 0:1] = A
+    invM[:, 0:1, 1:2] = D
+    invM[:, 0:1, 2:3] = G
+    invM[:, 1:2, 0:1] = B
+    invM[:, 1:2, 1:2] = E
+    invM[:, 1:2, 2:3] = H
+    invM[:, 2:3, 0:1] = C
+    invM[:, 2:3, 1:2] = F
+    invM[:, 2:3, 2:3] = I
+
+    invM = invM / detM
+
+    return invM
 
 class HomographySample:
     def __init__(self, H_tgt, W_tgt, device=None):
